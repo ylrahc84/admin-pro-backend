@@ -3,14 +3,27 @@ const bcryptjs = require('bcryptjs');
 
 const Usuario = require('../models/usuario');
 const { generaJWT } = require('../helpers/jwt');
+const { Promise } = require('mongoose');
 
 const getUsuarios = async(req, res) => {
 
-    const usuario = await Usuario.find({}, 'nombre email role');
+    const desde = Number(req.query.desde) || 0;
+
+    //const usuario = await Usuario.find({}, 'nombre email role').skip(desde).limit(5);
+
+    const [usuarios, total] = await Promise.all([
+        Usuario
+        .find({}, 'nombre email role img')
+        .skip(desde)
+        .limit(5),
+
+        Usuario.countDocuments()
+    ]);
 
     res.json({
         ok: true,
-        usuario
+        usuarios,
+        total
     });
 }
 
